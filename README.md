@@ -1,0 +1,739 @@
+<h1 align="center">SunQuarTeX</h1>
+<p align="center">
+  Write once, present everywhere!<br/>基于 Quarto 的多格式输出中英文学术写作模板库
+</p>
+<p align="center">
+  <a href="https://github.com/sun123zxy/sunquartex">Github 仓库</a> · <a href="https://sun123zxy.github.io/sunquartex">网页 Demo</a>
+</p>
+
+## 核心功能
+
+Quarto 基础功能：
+
+- 基于 Pandoc's Markdown 的完备学术写作语法
+- 强大的交叉引用与定理系统功能
+- HTML、PDF/LaTeX、Beamer、Github Flavored Markdown (GFM) 全格式输出；MS Word、PPT、Revealjs 有限支持
+- 嵌入 Python 代码生成数据图表（Computation）
+- Mermaid、Graphviz 流程图绘制（Diagram）
+- 兼容 `.ipynb` 源文件渲染
+
+额外支持：
+
+- 更好的中文 LaTeX 样式：适配 Quarto 的 CTeX 模板
+- TikZ / [tikz-cd](https://ctan.org/pkg/tikz-cd) / [quiver](https://q.uiver.app/) 图表绘制
+- Lean 4 代码高亮、自动源码导入转换 Markdown
+- RST-style list tables
+- Github Actions 自动生成 Demo 站点
+
+推荐在网页 Demo 中阅读本 README．
+
+## 基础安装
+
+- 下载并安装 [quarto-cli](https://quarto.org/)．本仓库渲染使用 Quarto 版本为 {{< version >}}．
+
+  - （推荐）安装 [VSCode](https://code.visualstudio.com/) IDE 并安装 [Quarto](https://marketplace.visualstudio.com/items?itemName=quarto.quarto) 插件以获得高亮、预览计算结果等功能．
+
+- 创建新文章时使用 Github Template 以本仓库为模板建立新仓库．您也可以下载本仓库的压缩包或 clone 到本地．
+
+- 仓库根目录命令行执行 `quarto render examples/helloworld.qmd --to=html` 测试安装情况．
+
+PDF / Beamer 输出等可选项安装和使用方法参见后文 [@sec-optional]．另外，纯命令行的自动化 CI 流程可参见本仓库下的 Github Actions 配置文件．
+
+## 基础使用
+
+### 渲染
+
+在仓库根目录命令行执行 `quarto render path/to/your_file.qmd --to=your_format`．
+
+- 使用 `--to` 参数指定输出类型，包括 `html`, `pdf`， `beamer`, `docx`, `gfm`．如果已经在文档头中 `format` 选项下列明输出格式，也可不在命令行中指定该选项．
+
+示例文件请在 [`examples/`](examples/) 目录下查看．其中或包含可选支持内容，请安装相应依赖或删除对应内容后渲染．
+
+### 写作
+
+Quarto 使用的底层 Markdown 方言为 [Pandoc's Markdown](https://pandoc.org/MANUAL.html#pandocs-markdown)．速成可直接参考示例文档或 [Quarto](https://quarto.org/docs/authoring/markdown-basics.html) 官方教程．
+
+文档中开头部分 `---` 之间的内容称为 YAML 文档头（YAML Front Matter），用于设置文档相关元信息，也用于设置输出格式、样式等．您在自定义的过程中可能需要修改或添加它们．
+
+针对特定输出格式的设置请在文档头 `format` 下对应格式选项下设置．希望全局生效的设置（一般）可在文档头顶层设置．
+
+（重要）在文件头声明 `lang=zh` 或 `lang=en` 调整语言．该选项会影响文档的格式和渲染方式。
+
+## 更新
+
+如果您文章的仓库由 Github Template 创建，或者已经在使用 Git 版本控制，我们推荐使用如下方式拉取源仓库的更新：
+
+```sh
+git remote add sunquartex git@github.com:sun123zxy/sunquartex.git # 添加 sunquartex 作为第二远程仓库
+git pull sunquartex master --allow-unrelated-histories --no-commit # 拉取并尝试合并 sunquartex 的更新
+# 手动处理合并冲突
+git add .
+git commit -m "merge updates from sunquartex" # commit 合并
+git push # push 到你的远程仓库
+```
+
+- `--allow-unrelated-histories` 选项只有在第一次合并时需要添加．
+- `--no-commit` 选项用于防止自动 commit 合并．本仓库更新很不稳定，建议每次合并都手动处理．
+
+## 可选项安装与使用 {#sec-optional}
+
+### HTML / Revealjs / GFM / DOCX / PPTX
+
+开箱即用．
+
+:::{.remark}
+
+注意 HTML / Revealjs 由于后缀名冲突不能同时输出．
+:::
+
+### LaTeX / PDF / Beamer 输出
+
+我们没有直接使用 Quarto 默认的 PDF 输出，而是完全重新设计了输出模板（`_assets/suntemp-art.tex`, `_assets/suntemp-pre.tex`）．大动干戈的目的有个人喜好方面的考量：Quarto 默认使用 Koma-Script 系列的 `scrartcl` 文档类，而我们希望在英文环境下保留 `article` 文档类的原汁原味，也希望在中文环境下使用 `ctexart` / `ctexbeamer` 文档类获得更好的排版格式．
+
+重新设计 PDF 模板，您可以参考 [Quarto 的模板自定义教程](https://quarto.org/docs/journals/templates.html)．
+
+:::{.remark}
+
+注意 PDF / Beamer 由于后缀名冲突不能同时输出．
+:::
+
+#### 安装
+
+安装 Quarto 支持的 LaTeX 发行版．若无，可使用 `quarto install tinytex --update-path` 安装．
+
+TinyTeX 安装需要畅通的外网环境．如果您使用 Clash 作为代理，可能需要配置 TUN 模式接管全部流量．
+
+#### 使用
+
+正常指定 format 即可．
+
+- 可在渲染时使用 `--to=latex` 选项输出中间 `.tex` 文件．
+
+### Computation 功能
+
+#### 安装
+
+您需要在仓库中配置 Python 和 Jupyter 环境以使用 Computation 功能．
+
+- 建议您使用 uv 管理 Python 版本．`uv sync` 命令会自动安装本仓库所需的 Python 依赖．
+- 或者，在原生 Python 环境中执行  `pip install .` 安装 `pyproject.toml` 列明的所需模块．
+
+若您不需要使用部分功能，也可以参考 `pyproject.toml` 文件改动所需依赖．
+
+:::{.remark}
+
+若您使用 uv 管理 Python，请在渲染前确保命令行正确激活 uv 环境，或使用 `uv run quarto render`．
+:::
+
+Quarto 的 VSCode 插件支持类似 Jupyter Notebook 的图文混排编辑体验．您可以通过在 Markdown 中嵌入 Python 代码块来动态生成数据图表（参见 [Quarto 文档](https://quarto.org/docs/computations/python.html)）．
+
+#### 使用
+
+使用例：
+
+```{python}
+#| label: fig-polar
+#| fig-cap: "A line plot on a polar axis"
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = np.arange(0, 2, 0.01)
+theta = 2 * np.pi * r
+fig, ax = plt.subplots(
+  subplot_kw = {'projection': 'polar'} 
+)
+fig.patch.set_alpha(0)
+ax.patch.set_alpha(0)
+
+ax.plot(theta, r)
+ax.set_rticks([0.5, 1, 1.5, 2])
+ax.grid(True)
+plt.show()
+```
+
+#### 切换 Jupyter 内核（以 SageMath 为例）
+
+```
+jupyter:
+  kernel: sagemath
+```
+
+并使用 `{sage}` 作为代码块标签，参见 [Quarto Discussion #4231](https://github.com/orgs/quarto-dev/discussions/4231)．
+
+需要注意的是，需要确保当前环境的 `jupyter kernelspec list` 中已经正确安装了对应内核．
+
+:::{.remark}
+
+SageMath 在 Windows 原生环境下安装极为困难，我们建议通过直接编写 `.ipynb` 在 VSCode 中通过插件远程连接 WSL 中的 Jupyter 服务器使用 SageMath 内核．
+:::
+
+#### Computation 功能（使用 `.ipynb`）
+
+对于计算密集的文稿，您可能希望直接编写 `.ipynb` 文件固定执行结果．Quarto 也支持直接渲染 `.ipynb` 文件，其中的 Markdown 块内仍可使用 Quarto 特性．
+
+参见 [示例文件](examples/jupyter.ipynb)．建议您阅读 [Quarto 的 Jupyter Lab 使用介绍](https://quarto.org/docs/tools/jupyter-lab.html)．
+
+:::{.remark}
+
+除了直接使用使用 Jupyter Lab / Notebook 编辑 `.ipynb` 文件外，也可以使用 VSCode 官方支持的 [Jupyter 插件](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter) 获得编辑器内的 Notebook 编辑体验．该插件还支持远程 Jupyter 服务器连接，您可以在本地使用 VSCode 编辑器连接远程服务器上的 Jupyter 内核进行计算．例如：您可以在 WSL 环境中安装 Jupyter 和 SageMath 内核，在 Windows 原生环境中使用 VSCode 编辑器连接 WSL 中的 Jupyter 服务器进行计算．
+:::
+
+### 表格
+
+#### 传统 Markdown 表格
+
+|||||
+|:-:|:-:|:-:|:-:|
+| $L_i \times C_j$   | $2$           | $\mathbb N$   | $\mathbb R$   |
+| $2$                | $4$           | $\mathbb N$   | $\mathbb R$   |
+| $\mathbb N$        | $\mathbb N$   | $\mathbb N$   | ?             |
+| $\mathbb R$        | $\mathbb R$   | ?             | $\mathbb R$   |
+
+我们强烈建议您避免使用传统 Markdown 表格，其在新版本的 Quarto 中经常无法正常渲染．
+
+#### Markdown grid style tables
+
++---+----+----+---+---+
+| a | be | c  | d | e |
++---+    +----+---+---+
+| f |    | ew | a | b |
++---+----+----+---+---+
+| c | d  | ewfe   | e |
++---+----+----+---+---+
+| f | g  | h  | r | e |
++---+----+----+---+---+
+
+#### RST-style list tables
+
+我们还支持 [RST-style list tables](https://github.com/pandoc-ext/list-table)．该格式可以比较方便地合并单元格．
+
+:::{.list-table aligns="c,c,c" width="1,3,3"}
+
+- - row 1, column 1
+  - row 1, column 2
+  - row 1, column 3
+
+- - []{rowspan=2} row 2--3, column 1
+  - []{colspan=2} row 2, column 2--3
+
+- - row 3, column 2
+  - row 3, column 3
+:::
+
+注意表头部分（第一行）不可 `rowspan` 合并．亦见 [`examples/timetable.qmd`](examples/timetable.qmd)．
+
+#### Computation based tables
+
+您也可以直接使用代码生成表格：
+
+```{python}
+import numpy as np
+import math
+from IPython.display import Markdown, display
+from tabulate import tabulate
+import matplotlib.pyplot as plt
+
+R = np.array([0,100,200,300,400,500,600,700,800,900,1000,
+1100,1110,1120,1130,1140,1150,1160,1170,1180,1190,
+1200,1210,1220,1230,1240,1250,1260,1270,1280,1290,
+1300,1400,1500,2000,4000,math.inf])
+U = np.array([24.2E-3, 0.386,0.747,1.104,1.460,1.813,2.16,2.51,2.86,3.19,3.48,
+3.70,3.75,3.77,3.78,3.80,3.81,3.83,3.84,3.85,3.86,
+3.87,3.90,3.92,3.93,3.94,3.95,3.95,3.96,3.97,3.98,
+3.99,4.08,4.16,4.39,4.66,4.85])
+I = np.array([3.6,3.6,3.6,3.6,3.6,3.5,3.5,3.5,3.5,3.5,3.4,
+3.3,3.4,3.4,3.4,3.4,3.3,3.3,3.3,3.3,3.3,
+3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.1,3.1,3.1,
+3.0,2.9,2.7,2.2,1.130,47.7E-3])
+P = U*I
+```
+
+```{python}
+#| label: tbl-light-on
+#| tbl-cap: 太阳能电池的负载特性
+#| tbl-subcap: 
+#|   - （粗）
+#|   - （细）
+#| layout-ncol: 2
+
+table = [[R[i], U[i], I[i], P[i]] for i in list(range(0, 11)) + [11,21,31,32,33,34,35,36]]
+display(Markdown(tabulate(table, headers=["R (Ω)", "U (V)", "I (mA)", "P (mW)"])))
+table = [[R[i], U[i], I[i], P[i]] for i in range(12, 31)]
+display(Markdown(tabulate(table, headers=["R (Ω)", "U (V)", "I (mA)", "P (mW)"])))
+```
+
+```{python}
+#| label: fig-light-on
+#| fig-cap: 太阳能电池的负载特性
+#| fig-subcap:
+#|   - 输出电流与电压关系曲线
+#|   - 输出功率与负载电阻关系曲线
+#| layout-ncol: 2
+
+fig, ax = plt.subplots()
+fig.patch.set_alpha(0)
+ax.patch.set_alpha(0)
+
+ax.set_xlabel("U (V)")
+ax.set_ylabel("I (mA)")
+
+ax.plot(U, I, marker="o")
+ax.grid(True)
+ax.set_xlim(0)
+ax.set_ylim(0)
+
+plt.show()
+
+
+fig, ax = plt.subplots()
+fig.patch.set_alpha(0)
+ax.patch.set_alpha(0)
+
+ax.set_xlabel("R (Ω)")
+ax.set_ylabel("P (mW)")
+
+ax.plot(R, P, marker="o")
+ax.grid(True)
+ax.set_xlim((0, 2000))
+ax.set_ylim(0)
+
+plt.show()
+```
+
+#### 交叉引用
+
+在表格外侧包裹 `::: {#tbl-label}` 块．表格 caption 置于块的最后一行．例如：
+
+:::{#tbl-table-example}
+
++---+----+----+---+---+
+| a | be | c  | d | e |
++---+    +----+---+---+
+| f |    | ew | a | b |
++---+----+----+---+---+
+| c | d  | ewfe   | e |
++---+----+----+---+---+
+| f | g  | h  | r | e |
++---+----+----+---+---+
+
+A Table
+:::
+
+### Diagram 流程图（Mermaid、Graphviz 等）
+
+[Quarto 文档](https://quarto.org/docs/authoring/diagrams.html)
+
+#### 安装
+
+非 HTML 格式下需要额外安装 Chrome 或 Chromium．
+
+- 若无，可使用 `quarto install tool chromium` 安装，见 [Quarto - Diagrams # Chrome Install](https://quarto.org/docs/authoring/diagrams.html#chrome-install)
+
+### TikZ / TikZ-cd / Quiver 交换图
+
+该功能由 [`_assets/tikz.lua`](_assets/tikz.lua) 实现．
+
+#### 安装
+
+如果只是输出到 PDF / Beamer，除了安装 LaTeX 发行版之外没有别的额外步骤．
+
+如还需输出至其它格式：请确保 XeLaTeX、dvisvgm、mutool 已在 PATH 中，且提前安装需要使用的 LaTeX 宏包：
+
+- 安装用于 TikZ 渲染的 LaTeX 宏包：
+
+  新建任意空白 Quarto 文档 `temp.qmd` 并执行
+    
+  `quarto render temp.qmd --to=pdf --template=_assets/suntemp-tikz.tex`
+    
+  随后删除 `temp.qmd`．
+
+  如果后续渲染时仍然提示缺少宏包，请手动安装，例如手动安装 `standalone` 宏包：执行 `tlmgr install standalone`
+
+- 使用 Quarto 自带的 TinyTeX 安装 `dvisvgm`：
+
+  - 执行 `tlmgr install dvisvgm` 和 `tlmgr path add` 下载 dvisvgm 并添加至 PATH．
+
+- 安装 `mutool`：
+
+  - （Linux / WSL）执行 `sudo apt install mupdf-tools`．
+  - （Windows）请自行在 [MuPDF](https://mupdf.com/) 官网下载并安装 MuPDF，并确保 `mutool` 在 PATH 中．
+
+:::{.remark}
+
+关于 mutool 必要性的说明：
+
+> As of Ghostscript 10.01.0, this will no longer work due to the introduction of a new PDF interpreter. Therefore, an alternative conversion module based on mutool, a utility which is part of the MuPDF package, has been introduced. It’s automatically invoked if Ghostscript can’t be used and if a working mutool executable is present in a directory which is part of the system’s search path.
+> 
+> 来自 [dvisvgm manual](https://dvisvgm.de/Manpage/)
+:::
+
+#### 使用
+
+推荐使用 [quiver](https://q.uiver.app/) 在线编辑器生成交换图代码．使用例：
+
+:::{#fig-tikzcd}
+
+```{tikz}
+\begin{tikzcd}
+	B && A & \rightsquigarrow & B && A
+	\arrow[""{name=0, anchor=center, inner sep=0}, "g"{description}, from=1-3, to=1-1]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "f", curve={height=-30pt}, from=1-3, to=1-1]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "h"', curve={height=30pt}, from=1-3, to=1-1]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "h"', curve={height=30pt}, from=1-7, to=1-5]
+	\arrow[""{name=4, anchor=center, inner sep=0}, "f", curve={height=-30pt}, from=1-7, to=1-5]
+	\arrow["\alpha"', shorten <=4pt, shorten >=4pt, Rightarrow, from=1, to=0]
+	\arrow["\beta"', shorten <=4pt, shorten >=4pt, Rightarrow, from=0, to=2]
+	\arrow["{\beta \circ_1 \alpha}"', shorten <=8pt, shorten >=8pt, Rightarrow, from=4, to=3]
+\end{tikzcd}
+```
+
+TikZ-cd / Quiver 示例
+:::
+
+
+:::{#fig-tikz}
+
+```{tikz}
+\begin{tikzpicture}
+
+  % left: parameter line (the t-axis)
+  \begin{scope}[shift={(-4,0)}]
+    \draw[->] (-1.5,0) -- (1.5,0) node[below right] {$t$};
+    \coordinate (T) at (-1.00, 0);
+    \fill (T) circle (1.2pt) node[below=3pt] {$t$};
+    \fill (0,0) circle (1.2pt) node[below=3pt] {$0$};
+  \end{scope}
+
+  % arrow indicating the map
+  \draw[->] (-1.8,0) -- (-0.8,0) node[midway,above] {$\operatorname{Spec} \varphi$};
+
+  % right: (x,y)-plane
+  \draw[->] (-0.1,0) -- (2.0,0) node[below] {$x$};
+  \draw[->] (0,-1.2) -- (0,1.2) node[left] {$y$};
+
+  % cusp curve y^2 = x^3 via param t -> (t^2, t^3)
+  \draw[thick,domain=-1.2:1.2,smooth,variable=\t]
+    plot ({\t*\t},{\t*\t*\t});
+  \node[right] at (1.4,1.65) {$y^2=x^3$};
+
+  % image of a sample parameter t
+  \coordinate (P) at ({1.00*1.00},{-1.00*1.00*1.00});
+  \fill (P) circle (1.4pt) node[above right] {$(t^2,t^3)$};
+
+\end{tikzpicture}
+```
+
+TikZ 示例
+:::
+
+:::{.remark}
+
+在 Beamer 中使用 TikZ 时，所在幻灯片须添加 `{.fragile}` 标记．
+:::
+
+### Lean 代码高亮与带注释源码导入
+
+[`assets/lean.xml`](assets/lean.xml) 用于 Pandoc 的 Lean 代码高亮．直接使用 `lean` 作为代码块的语言标记即可．
+
+[`_assets/lean-include.lua`](_assets/lean-include.lua) shortcode 用于直接将带有注释的 Lean 代码导入转换为 Markdown．使用如下格式即可导入：
+
+```qmd {shortcodes=false}
+{{< lean-include path/to/your_file.lean >}}
+```
+
+现已支持 PDF / Beamer 输出．
+
+:::{.remark}
+
+目前 HTML 的目录导航定位存在问题．
+:::
+
+### QR Code
+
+做 presentation 想分享网站？我们已经接入 [quarto-qrcode](https://github.com/jmbuhr/quarto-qrcode) 插件，使用语法
+
+```qmd {shortcodes=false}
+:::{#fig-qrcode}
+
+{{< qrcode https://blog.sun123zxy.top >}}
+
+This is a QR code
+:::
+```
+
+即可加入对应网址二维码，支持 HTML / PDF / Beamer．具体使用说明请参考原插件仓库．
+
+### Github Actions + Github Pages 网站生成
+
+本仓库采用 GitHub Actions 官方工作流 + GitHub Pages 自动生成并部署 Demo 站点．注意我们没有采用 `quarto publish` 的默认方式，后者需要维护 `gh-pages` 分支很麻烦．
+
+#### 安装
+
+首次使用时，在 GitHub 仓库页面完成以下设置：
+
+- 前往 **Settings → Pages → Build and deployment → Source**，将发布源选为 **GitHub Actions**（并在 Actions 分页中激活 Actions）．
+- 按需修改 `_quarto-website.yml` 下的 `site-url` 为你的域名（如使用非 GitHub Pages 默认域名，可在仓库 Pages 设置中配置自定义域名）
+  - 嫌麻烦的话也可以直接删除这个选项．
+
+#### 使用
+
+以后的每次向 `master` 的 push（或在 Actions 分页手动触发工作流）均会触发 GitHub Actions 自动完成网站生成与部署．
+
+### 输出为整本书（Book）
+
+我们支持 HTML / PDF / DOCX 书籍打包．请阅读并调整 `_quarto-book.yml` 的配置．包括：
+
+- 书名、作者、日期、要引入的章节等
+- `site-url`：如果您希望非 HTML 格式下的不在书内的相对链接被解析到相对指定网站根目录
+- 其它渲染选项．注意书籍渲染的逻辑是将各章节直接拼接到 `chapters` 列表中首个文件处渲染．我们建议您确保此处文档头包含正确的 `lang`、合并好的 `bibliography` 和输出格式选项．
+
+图片、书内引用会被正确处理，但超链接需要额外小心：请参考 [`examples/cnart.qmd`](examples/cnart.qmd) 中相关部分（[@sec-link-test]）的写法处理．
+
+渲染时，请使用 `quarto render --profile=book`．
+
+## 样式自定义
+
+修改 YAML 文档头可以自定义部分默认样式．
+
+### 我要改字号！
+
+目前仅支持 PDF 字号修改．英文文档默认字号为 11pt，中文文档默认字号为 10.5pt（五号，详见 CTeX 手册）．
+
+```yaml
+format:
+  pdf:
+    fontsize: 12pt
+```
+
+### 我要 / 不想要目录！
+
+```yaml
+toc: true # 开启目录
+```
+
+该设置全局 / 特定格式下均生效．
+
+### 我不想给 section 编号 / 我要改 section 编号格式！
+
+```yaml
+number-sections: true # section 编号开关，默认关闭
+number-depth: 3 # 从 chapter / 一级标题计起的编号深度．此时 chapter, section, subsection 被编号
+toc-depth: 3 # 从 chapter / 一级标题计起的目录深度．此时 chapter, section, subsection 出现在目录中
+```
+
+该设置全局 / 特定格式下均生效．
+
+### 我不想给定理编号！/ 我要改定理编号格式！
+
+Quarto 内置的定理编号系统目前无法修改（见 [Quarto Discussion #5479](https://github.com/quarto-dev/quarto-cli/discussions/5479)），但我们提供自定义 PDF 格式定理编号的可能．（目前仍然无法实现完全关闭 PDF 格式中的定理编号）
+
+```yaml
+format:
+  pdf:
+    custom-theorem:
+      numbered-within: section # 开启后将相对于 section（或 subsection, etc.）进行定理编号
+      numbered-alike: true # 开启后不同类型的定理将共享编号
+```
+
+默认开启 `numbered-alike`，不相对任何标题层级编号．在输出 Book 时，默认相对于 chapter 编号．
+
+注意使用 `numbered-within` 前请先开启 `number-sections`．
+
+### 我要改引用格式！
+
+PDF / Beamer 输出使用 BibLaTeX alphabetical，HTML 输出使用 IEEE．如需修改，请自定义 `sun*****.cls` 和 `_format.yml` 和 CSL 文件．
+
+### 我要更丰富的 Callout 定理包裹样式！
+
+请移步 [sun123zxy/quarto-callouty-theorem](https://github.com/sun123zxy/quarto-callouty-theorem) 学习配置方法．
+
+### 我要改 Beamer 幻灯片的颜色！
+
+```yaml
+format:
+  beamer:
+    custom-color:
+      define: \definecolor{blueblk}{HTML}{1874D0} # 在这里用 LaTeX 自定义颜色供后面使用
+      main: green!40!black # 主色调
+      theorem: green!32!black # 各种定理环境颜色
+      example: blueblk!50!black # Example / Exercise 环境颜色
+      remark: white!15!black # Proof / Solution / Remark 环境颜色
+      link: lime!85!black # 链接颜色
+```
+
+### PDF / Beamer 宏包不够用，我要自己导入！
+
+```yaml
+format:
+  html:
+    include-in-header: 
+      text: |
+        \(\require{physics}\)
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{physics}
+```
+
+亦见 [`examples/extra.qmd`](examples/extra.qmd)．暂时不支持其它格式下的宏包导入．
+
+### 自定义主题？
+
+```yaml
+format:
+  html:
+    theme:
+      light: [flatly, _assets/custom.scss]
+      dark: [darkly, _assets/custom.scss]
+```
+
+更改前面的 `flatly` / `darkly` 为 [Bootswatch 主题之一](https://quarto.org/docs/output-formats/html-themes.html) 即可迅速更改正常 / 暗色模式下的网页主题．
+
+### 我要自定义 DOCX / PPTX 样式！
+
+请修改模板文件 `_assets/suntemp-art.docx` 和 `_assets/suntemp-pre.pptx`．
+
+## Q&A
+
+### 一般性的
+
+#### 示例文件编译不了！
+
+示例文件包含了部分可选支持内容，如未安装相应依赖，请删除对应内容后渲染．
+
+#### 我不懂 Computer Science，你能不能讲人话！
+
+请您活用 AI 工具降低学习门槛！您可以：
+
+- 把 README 丢给 AI 提问．
+- 使用 VSCode 打开本仓库，使用自带的 Github Copilot，将 README 扔进对话框，提出您的具体需求并获得人话解答．
+
+#### 我想要 XXX 功能！/ 我要自己魔改！
+
+仓库主要为自用，如能为您的生活带来便利欢迎取用．想要的功能欢迎移步 Issue 或 Discussion 提出（不保证会做 :p）
+
+Issue 中跟踪了一些计划中的功能和已知问题，Q&A 没有涉及的内容可移步参考．
+
+我们提供的 YAML 文档头样式只覆盖了了极小一部分功能．更深入的魔改需要您
+
+- 进一步学习底层软件 Quarto，魔改本仓库的默认配置
+- 进一步学习 Pandoc，编写 LaTeX 模板 / Lua filter
+
+有能力欢迎 Fork 和 Pull Request．
+
+#### 仓库太重，我想要 standalone 的单文件渲染！
+
+请移步 [quarto-render](https://github.com/sun123zxy/quarto-render)，一个独立开发的小型命令行程序使得单文件 Quarto 渲染更加方便．
+
+### 写作相关
+
+#### 标题应该用多少个 `#`？
+
+一级标题被视为整个文档的大标题（即 Book 中的 chapter title），文档头标题和一级标题不应同时出现．
+
+二级标题对应 section，三级标题对应 subsection．Beamer 中四级标题对应 slide．在 Pandoc 中，这对应着
+
+```yaml
+shift-heading-level-by: -1
+slide-level: 4
+```
+
+Quarto 对标题层级的处理比较混乱——例如，Book 项目中 Quarto 似乎会额外对标题层级进行 -1 处理；`shift-heading-level-by` 会让小节编号系统无法正常工作．我们做了很多 ad-hoc 的调整（例如 `_assets/promote-h1.lua` 将正文一级标题强制提升至 metadata 标题），因此不建议您再修改这些设置．
+
+参见：
+
+- [相关讨论](https://community.rstudio.com/t/why-do-default-r-markdown-quarto-templates-use-second-level-headings-instead-of-first-level-ones/162127)
+- [Pandoc `--shift-heading-level-by` 文档](https://pandoc.org/MANUAL.html#option--shift-heading-level-by)
+- [Pandoc `slide-level` 文档](https://pandoc.org/MANUAL.html#structuring-the-slide-show)
+- [Quarto Issue #12048](https://github.com/quarto-dev/quarto-cli/issues/12048)
+
+#### 分页符
+
+`{{< pagebreak >}}`{shortcodes=false}．见[官方文档](https://quarto.org/docs/authoring/markdown-basics.html#page-breaks)．
+
+#### YAML 文档头里的字符串到底打不打引号？
+
+可打可不打．打了的话需要注意特殊字符的转义问题（如 `\`）．
+
+#### 用 `$` 包裹行内公式的正确格式
+
+示例：`我们有 $(a + b)^2 = a^2 + 2ab + b^2$．证毕．`
+
+`$` 内侧应紧接着公式中的非空格字符，外侧与中英文字符之间应有空格，与标点符号、连字符之间不留空格．参考 [Pandoc 文档](https://pandoc.org/MANUAL.html#extension-tex_math_dollars)．
+
+#### 怎么打出 \TeX, \LaTeX, \SunQuarTeX？
+
+直接写 `\TeX`, `\LaTeX`, `\SunQuarTeX`，不必置于数学环境中．我们编写了 `_assets/fancy-latex-logo.lua` 处理他们在不同格式下的渲染．
+
+#### 方便的 SVG 草图绘制？
+
+如果您有触控笔，推荐使用 [VSCode Draw 插件](https://marketplace.visualstudio.com/items?itemName=hall.draw) 获得编辑器内的 SVG 草图绘制功能．
+
+#### 关于相对链接的处理
+
+如您不使用 website 或 book 输出则无需担心此部分．
+
+目前 Quarto 对相对链接的处理没有考虑到为非 HTML 格式设置 base URL．我们目前使用 `_assets/offpage-crosslinks.lua` 作为 workaround，从而使得其它格式下的相对链接被解析到 `site-url` 选项指定的网站根目录．您可以在 `_filter.yml` 中调整启用该脚本的输出格式．注意脚本可能无法正确处理 symbolic link．
+
+#### 关于多作者、多机构的文档头设置
+
+见 `examples/cnart.qmd` 和 `examples/enart.qmd`，以及 [Quarto 文档](https://quarto.org/docs/authoring/front-matter.html#authors-and-affiliations)．
+
+#### 关于文档附录
+
+注意区分书籍附录和文档附录．文档附录目前 Quarto 没有很好的跨格式支持，见 [Quarto Issue #10928](https://github.com/quarto-dev/quarto-cli/issues/10928)）．我们建议您使用如下方式确保 HTML / PDF 格式下的正常渲染：
+
+`````md
+```{=latex}
+\appendix
+```
+
+## Computational Results {.appendix}
+
+This is an numbered appendix section for computational results.
+
+## Acknowledgments {.appendix .unnumbered}
+
+This is an unnumbered appendix section for acknowledgments.
+`````
+
+### 输出相关
+
+#### 写好的 Beamer 也想输出一份文稿版本的 PDF？
+
+理论上与文档格式兼容，可直接设置 `--to=pdf` 输出文稿版本．
+
+#### 我要输出到知乎！
+
+您可以使用 GFM 格式输出，输出内容可复制至 [markdown.com.cn](https://markdown.com.cn/editor/) 的在线编辑器转知乎格式．
+
+#### PDF 输出，LaTeX 渲染了十遍！
+
+一般是文档的交叉引用有误所致，请检查文档头的 `bibliography` 选项和正文中的引用情况．
+
+#### 每次渲染都要 `updating tlmgr` 烦死了！
+
+默认情况下，Quarto 会在每次渲染 LaTeX 时使用 TinyTeX 自动检测和下载所需宏包．但如果 Quarto 生成的 LaTeX 源文件有误，也会触发此过程．如果您频繁遇到，可以选择关闭 LaTeX 渲染的自动下载：
+
+```yaml
+format:
+  pdf:
+    latex-auto-install: false
+```
+
+#### `tlmgr` 未找到？
+
+请检查环境变量 PATH 中是否包含了 TinyTeX 的 bin 目录．Windows 下 tlmgr 以 bat 的形式存在，命令行调用时可能需要添加后缀名 `tlmgr.bat command`．
+
+#### 网页端 Github Action 时 TinyTeX / TikZ 安装 / 渲染失败？
+
+- 有时网络不稳定，请检查报错信息并重试．
+- 如果你开启了选择性渲染（`project.render`），请检查 Github Actions 文件，确保 TikZ 预渲染使用的临时文件被加入到渲染列表中：
+
+```yaml
+project:
+  render:
+    - temp.qmd
+    - ... # your target files
+```

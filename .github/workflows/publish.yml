@@ -1,0 +1,100 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+name: Render and Publish to Github Pages
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Render Quarto website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # To install LaTeX to build PDF book 
+          # tinytex: true 
+          # uncomment below and fill to pin a version
+          version: 1.11.9
+      
+      # To update PATH
+      - name: Set up TinyTeX via Quarto manually
+        run: |
+          quarto install tinytex --update-path
+      - name: Update TeX packages
+        run: |
+          tlmgr update --self
+          tlmgr update --all
+      # To ensure dvisvgm installed
+      - name: Install dvisvgm via TinyTeX
+        run: |
+          tlmgr update --self
+          tlmgr install dvisvgm
+          tlmgr path add
+          dvisvgm --help
+      
+      - name: Install mutool
+        run: sudo apt-get install mupdf-tools
+      
+      # To import libraries in advance for tikz image generation
+      - name: Prepare for TikZ rendering
+        run: |
+          echo "" >> temp.qmd
+          quarto render temp.qmd --to=pdf --template=_assets/suntemp-tikz.tex
+          rm temp.qmd
+
+      # From https://github.com/actions/setup-python
+      - name: Setup Python
+        uses: actions/setup-python@v6
+
+      - name: Setup Python dependencies
+        run: python3 -m pip install .
+
+      # - name: Render Quarto Project
+      #   uses: quarto-dev/quarto-actions/render@v2
+
+      - name: Render Quarto Website
+        run: quarto render
+        env:
+          QUARTO_PROFILE: website
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _output
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

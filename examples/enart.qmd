@@ -1,0 +1,124 @@
+---
+title: Article Example (English)
+subtitle: \SunQuarTeX Examples
+
+author:
+  - name: Alice Margatroid
+    orcid: 1123-5813-2134-5589
+    email: alice@example.com
+    affiliations:
+      - ref: user
+      - ref: dev
+  - name: Bob Kirisame
+    orcid: 9987-5297-8976-5521
+    email: bob@example.com
+    affiliations:
+      - ref: user
+
+affiliations:
+  - id: user
+    name: \SunQuarTeX User Group
+    city: Example City
+    state: Example State
+    country: Example Country
+    postal-code: 12345
+  - id: dev
+    name: \SunQuarTeX Dev Team
+    city: Example City
+    state: Example State
+    country: Example Country
+    postal-code: 12345
+
+date: 2023/08/10
+date-modified: 2026/11/02
+abstract: This is an abstract.
+bibliography: bibliography.bib
+lang: en
+
+number-sections: true
+
+format:
+  html: default
+  pdf:
+    toc: true
+  docx: default
+  gfm: default
+---
+
+## First
+
+This is a reference [@deepface, {p. 1}].
+
+\SunQuarTeX is powered by Quarto and \LaTeX.
+
+::: {#exm-rtimesn}
+
+Prove that
+$$
+\mathbb R \times \mathbb N \approx \mathbb N \times \mathbb R \approx \mathbb R
+$$
+:::
+
+::: {.proof}
+
+Obvious as follows
+$$
+\mathbb R \approx \mathbb R \times 2 \preccurlyeq \mathbb R \times \mathbb N \preccurlyeq \mathbb R \times \mathbb R \approx \mathbb R
+\implies \mathbb R \times \mathbb N \approx \mathbb N \times \mathbb R \approx \mathbb R
+$$
+:::
+
+## Second
+
+::: {#tbl-panel-unsolved layout-ncol=2}
+|||||
+|:-:|:-:|:-:|:-:|
+| $L_i \times C_j$   | $2$           | $\mathbb N$   | $\mathbb R$   |
+| $2$                | $4$           | $\mathbb N$   | $\mathbb R$   |
+| $\mathbb N$        | $\mathbb N$   | $\mathbb N$   | ?             |
+| $\mathbb R$        | $\mathbb R$   | ?             | $\mathbb R$   |
+
+:Cartesian (unsolved) {#tbl-cartesian-unsolved}
+
+|||||
+|:-:|:-:|:-:|:-:|
+|$L_i^{C_j}$  | $2$           | $\mathbb N$   | $\mathbb R$     |      
+|$2$          | $4$           | $\mathbb R$   | $2^{\mathbb R}$ | 
+|$\mathbb N$  | $\mathbb N$   | ?             | ?               |
+|$\mathbb R$  | $\mathbb R$   | ?             | ?               |
+
+:Power (unsolved) {#tbl-power-unsolved}
+
+Some Cardinality Results
+:::
+
+:::{.proof}
+
+## A proof with caption
+
+This is a proof with caption.
+:::
+
+:::{.remark}
+
+## A remark with caption
+
+This is a remark with caption.
+:::
+
+## Code
+
+```c++
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+    return 0; // 返回 0
+}
+```
+
+```lean
+example : (∀ x, p x → r) → ((∃ x, p x) → r) := by
+  intro h ⟨a, hpa⟩ -- you may also `rcases` explicitly
+  exact h a hpa
+```

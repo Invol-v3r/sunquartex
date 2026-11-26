@@ -1,0 +1,355 @@
+\RequirePackage{xstring}
+\RequirePackage{etoolbox}
+
+% --- test ---
+
+\newif\ifzh
+\IfBeginWith{$lang$}{zh}{\zhtrue}{\zhfalse}
+
+\ifzh
+  $if(documentclass)$
+  \IfBeginWith{$documentclass$}{book}{
+    \def\mydocumentclass{ctexbook}
+  }{\IfBeginWith{$documentclass$}{report}{
+    \def\mydocumentclass{ctexrep}
+  }{
+    \def\mydocumentclass{ctexart}
+  }}
+  $else$
+  \def\mydocumentclass{ctexart}
+  $endif$
+\else
+  $if(documentclass)$
+  \def\mydocumentclass{$documentclass$}
+  $else$
+  \def\mydocumentclass{article}
+  $endif$
+\fi
+
+\ifzh
+  \def\transmodified{最后更新于}
+  \def\transtoc{目录}
+\else
+  \def\transmodified{Last modified on}
+  \def\transtoc{Table of Contents}
+\fi
+
+% --- documentclass ---
+
+\ifzh
+  \documentclass[fontset=fandol,$if(fontsize)$$fontsize$$endif$]{\mydocumentclass}
+\else
+  \documentclass[$if(fontsize)$$fontsize$$else$11pt$endif$]{\mydocumentclass}
+\fi
+
+% --- book ---
+
+\usepackage{bookmark}
+
+% --- fonts ---
+
+\usepackage{fontspec} % seemingly improves font handling, so that \mathbf works with correct bold fonts
+\usepackage[Medium, Scale=MatchLowercase]{juliamono} % change code font to support Unicode, e.g. Lean code
+
+\ifzh
+    \setCJKmainfont{FandolSong-Regular.otf}[BoldFont = FandolHei-Regular.otf, ItalicFont = FandolKai-Regular.otf] % Hei represents bold, Kai represents italic
+    \ctexset{
+        section/format              += \zihao{-4}\raggedright,
+        subsection/format           += \zihao{5}\raggedright,
+        subsubsection/format        += \zihao{5}\raggedright,
+    }
+\else
+    % for XeLaTeX
+
+    \usepackage{xeCJK}
+
+    % \usepackage{fontspec}
+    % \setmonofont{...}
+
+    % for LuaLaTeX font fallback
+
+    % \usepackage{fontspec}
+    % \usepackage{luaotfload} % for LuaLaTeX font fallback
+    
+    % \directlua{luaotfload.add_fallback("monofontfallback",{"FandolHei:mode=harf;", "Linux Libertine O:mode=harf;"})}
+    % \setmonofont{Latin Modern Mono}[RawFeature={fallback=monofontfallback}]
+
+    % \directlua{luaotfload.add_fallback("mainfontfallback",{"FandolSong:mode=harf;", "Linux Libertine O:mode=harf;"})}
+    % \setmainfont{Latin Modern Roman}[RawFeature={fallback=mainfontfallback}]
+
+    % \directlua{luaotfload.add_fallback("sansfontfallback",{"FandolHei:mode=harf;", "Linux Libertine O:mode=harf;"})}
+    % \setsansfont{Latin Modern Sans}[RawFeature={fallback=sansfontfallback}]
+\fi
+
+% --- section numbering ---
+
+$if(numbersections)$
+$if(secnumdepth)$
+\usepackage{calc}
+\setcounter{secnumdepth}{$secnumdepth$ - 1} % Quarto passes this wrongly. It actually counts from chapter level.
+$endif$
+$else$
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+$endif$
+
+% --- page layout ---
+
+\usepackage[a4paper,top=2.75cm,bottom=2.25cm,left=2.75cm,right=2.75cm,marginparwidth=1.75cm]{geometry}
+
+% --- pandoc ---
+
+\usepackage{subcaption}
+
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+$tightlist.tex()$
+$tables.tex()$
+$graphics.tex()$
+
+% --- code font size ---
+
+$if(highlighting-macros)$
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}, fontsize=\normalsize}
+$endif$
+
+% --- bibliography ---
+
+\usepackage[backend=biber,style=alphabetic,autocite=plain]{biblatex}
+% \usepackage[backend=biber,style=gb7714-2015,autocite=plain]{biblatex}
+\addbibresource{$bibliography$}
+
+% --- hyperref ---
+
+\usepackage{hyperref} % render refs as hyperlinks
+
+% --- floating ---
+
+\usepackage{float} % for better floating for tables and figures, such as "H" option for tables to make them stay HERE precisely
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
+
+% --- titling ---
+
+\usepackage{orcidlink}
+
+\usepackage{titling}
+\ifzh
+    % title
+    \pretitle{\begin{center} \zihao{-2} \bfseries}
+    \posttitle{\par\end{center}\vskip 0.5em}
+\fi
+
+\makeatletter
+\providecommand{\subtitle}[1]{
+    \apptocmd{\@title}{\vskip 0.5em \par {\ifzh \zihao{4} \kaishu \else \large \fi #1 \par}}{}{}
+}
+\makeatother
+
+% author
+\ifzh
+    \preauthor{\begin{center}\zihao{-4}\kaishu % \kaishu for Chinese only
+        \lineskip 0.5em%
+        \begin{tabular}[t]{c}}
+\else
+    \preauthor{\begin{center}\begin{tabular}[t]{c}}
+\fi
+
+\postauthor{
+    \end{tabular}\par\end{center}
+    $if(by-affiliation)$
+        \begin{center}\small
+        $for(by-affiliation)$
+            \textsuperscript{$it.number$}~%
+            $it.name$%
+            $if(it.department)$, $it.department$$endif$%
+            $if(it.group)$, $it.group$$endif$%
+            $if(it.address)$, $it.address$$endif$%
+            $if(it.city)$, $it.city$$endif$%
+            $if(it.region)$, $it.region$$endif$ $if(it.postal-code)$ $it.postal-code$$endif$%
+            $if(it.country)$, $it.country$$endif$\par%
+        $endfor$
+            \end{center}
+    $endif$
+}
+
+% date
+\ifzh
+    \predate{$if(date)$\begin{center} \zihao{-4} \kaishu$endif$}
+    \postdate{$if(date)$\par\end{center}$endif$}
+\else
+    \predate{$if(date)$\begin{center}$endif$}
+    \postdate{$if(date)$\par\end{center}$endif$}
+\fi
+
+% --- abstract ---
+
+\ifzh
+  %\ifcsdef{myenvironment}{%
+    \renewenvironment{abstract}{\zihao{-5} \textbf{摘要} \kaishu}{}
+  %}{}
+\else
+  \renewenvironment{abstract}{\noindent \small \textbf{Abstract.}}{}
+\fi
+
+% -- math --
+
+\usepackage{amsmath} % better math. including \eqref
+\usepackage{amssymb} % better symbols like \varnothing. amsfonts inside (which support \mathbb etc.)
+
+% -- tikz --
+
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{quiver}
+
+% -- theorems ---
+
+\usepackage{amsthm} % better theorem-like environment support (such as proof, unordered, etc.)
+
+\newtheorem{counter}{Counter}$if(custom-theorem.numbered-within)$[$custom-theorem.numbered-within$]$endif$
+\newcommand{\mynewthm}[2]{\newtheorem{#1}$if(custom-theorem.numbered-alike)$[counter]{#2}$elseif(custom-theorem.numbered-within)${#2}[$custom-theorem.numbered-within$]$else${#2}$endif$}
+
+\ifzh % zhthm
+
+\newtheoremstyle{suncnthm}% name
+{}% Space above
+{}% Space below
+{}% Body font
+{}% Indent amount \parindent
+{}% Theorem head font
+{\phantom{.}}% Punctuation after theorem head % no punctuation
+{5pt plus 1pt minus 1pt}% Space after theorem head % default
+{\bfseries \thmname{#1}\thmnumber{ #2}\thmnote{（#3）}}% Theorem head spec % bold number
+
+\theoremstyle{suncnthm}
+
+\mynewthm{theorem}{定理}
+\mynewthm{lemma}{引理}
+\mynewthm{corollary}{推论}
+\mynewthm{proposition}{命题}
+\mynewthm{conjecture}{猜想}
+\mynewthm{definition}{定义}
+\mynewthm{example}{例}
+\mynewthm{exercise}{习题}
+\newtheorem*{solution}{解}
+\newtheorem*{remark}{注记}
+\mynewthm{refsolution}{解}
+\mynewthm{refremark}{注记}
+
+% proof hack begin
+\makeatletter
+\newenvironment{myproof}[1][\myproofname]{\par
+  \pushQED{\qed}%
+  \normalfont \topsep6\p@\@plus6\p@\relax
+  \trivlist
+%<amsbook|amsproc>  \itemindent\normalparindent
+%\itemindent\parindent
+  \item[\hskip\labelsep
+%<amsbook|amsproc>        \scshape
+%<amsart|amsthm>        \itshape
+    \bfseries 
+    #1\phantom{.}%\@addpunct{.}
+    ]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+}
+%    \end{macrocode}
+%    Default for \cn{proofname}:
+%    \begin{macrocode}
+\providecommand{\myproofname}{证明}
+
+\makeatother
+% hack end
+\renewenvironment{proof}{\begin{myproof}}{\end{myproof}}
+
+\else % enthm
+
+\theoremstyle{definition}
+\mynewthm{theorem}{Theorem}
+\mynewthm{lemma}{Lemma}
+\mynewthm{corollary}{Corollary}
+\mynewthm{proposition}{Proposition}
+\mynewthm{conjecture}{Conjecture}
+\mynewthm{definition}{Definition}
+\mynewthm{example}{Example}
+\mynewthm{exercise}{Exercise}
+
+\theoremstyle{remark}
+\newtheorem*{solution}{Solution}
+\newtheorem*{remark}{Remark}
+\mynewthm{refsolution}{Solution}
+\mynewthm{refremark}{Remark}
+
+\fi % endthm
+
+$if(header-includes)$
+$header-includes/first$ % other header includes is injected by Quarto, hence ignored
+$endif$
+
+$if(sunquartex-logo)$
+$sunquartex-logo$ % inject SunQuarTeX logo, metadata given by the Lua filter
+$endif$
+
+\usepackage{qrcode} % https://github.com/jmbuhr/quarto-qrcode
+
+% --- main ---
+
+\title{$title$}
+
+$if(subtitle)$
+\subtitle{$subtitle$}
+$endif$
+
+\author{
+$if(by-author)$%
+$for(by-author)$%
+$it.name.literal$%
+$if(it.affiliations)$\textsuperscript{$for(it.affiliations)$$it.number$$sep$,$endfor$}$endif$%
+$if(it.orcid)$\,\orcidlink{$it.orcid$}$endif$%
+$if(it.email)$\\ \texttt{$it.email$}$endif$%
+$sep$ \and%
+$endfor$%
+$else$%
+$for(author)$$author$$sep$ \and $endfor$%
+$endif$%
+}
+
+\date{$if(date)$$date$$if(date-modified)$\thanks{\transmodified \space $date-modified$.}$endif$$endif$}
+
+\begin{document}
+
+\maketitle
+
+$if(abstract)$
+\begin{abstract}
+    $abstract$
+\end{abstract}
+$endif$
+
+$for(include-before)$
+$include-before$
+
+$endfor$
+
+$if(toc)$
+\renewcommand*\contentsname{\transtoc}
+\setcounter{tocdepth}{$toc-depth$ - 1} % Quarto passes this wrongly. It actually counts from chapter level.
+\tableofcontents
+$endif$
+
+$body$
+
+\ifzh
+  \printbibliography[title={参考文献}]
+\else
+  \printbibliography
+\fi
+
+$for(include-after)$
+$include-after$
+
+$endfor$
+
+\end{document}
