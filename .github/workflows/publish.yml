@@ -46,9 +46,18 @@ jobs:
       - name: Install dvisvgm via TinyTeX
         run: |
           tlmgr update --self
-          tlmgr install dvisvgm fandol
+          tlmgr install dvisvgm
           tlmgr path add
           dvisvgm --help
+
+      - name: Install Fandol fonts from CTAN
+        run: |
+          font_dir="$(kpsewhich -var-value=TEXMFHOME)/fonts/opentype/public/fandol"
+          font_archive="$RUNNER_TEMP/fandol.zip"
+          mkdir -p "$font_dir"
+          curl -fsSL --retry 3 -o "$font_archive" https://mirrors.ctan.org/obsolete/fonts/fandol.zip
+          unzip -jo "$font_archive" '*.otf' -d "$font_dir"
+          kpsewhich FandolSong-Regular.otf
       
       - name: Install mutool
         run: sudo apt-get install mupdf-tools
